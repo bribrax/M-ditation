@@ -1,7 +1,7 @@
 const cacheName = 'meditation-cache-v1';
 
 const assetsToCache = [
-  './mediation.html',
+  './index.html',
   './logomediation.png',
   './manifest.json',
   './service-worker.js'
@@ -22,3 +22,4 @@ self.addEventListener('fetch', event => {
       .then(response => response || fetch(event.request))
   );
 });
+
