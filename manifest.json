@@ -1,7 +1,7 @@
 {
   "name": "Méditation Guidée",
   "short_name": "Méditation",
-  "start_url": "mediation.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#337D8F",
@@ -18,3 +18,4 @@
     }
   ]
 }
+
