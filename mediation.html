@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Méditation Guidée</title>
+    <link rel="manifest" href="manifest.json" />
+
+    <style>
+        :root {
+            --color-primary: #337D8F;
+            --color-secondary: #334E8F;
+            --color-accent: #45338F;
+            --color-light: #f4f4f4;
+            --color-white: #ffffff;
+            --color-text: #333333;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-light);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            color: var(--color-primary);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        p {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .buttons-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            color: var(--color-white);
+            border: none;
+            padding: 15px 10px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .meditation-display {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+            width: 100%;
+        }
+        
+        .circle-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin: 20px 0;
+        }
+        
+        .meditation-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 1;
+            border: 5px solid var(--color-white);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.5s ease;
+        }
+        
+        .progress-circle {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .progress-circle-background {
+            fill: none;
+            stroke: var(--color-light);
+            stroke-width: 10;
+        }
+        
+        .progress-circle-fill {
+            fill: none;
+            stroke: var(--color-accent);
+            stroke-width: 10;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 1s linear;
+        }
+        
+        .timer {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--color-primary);
+            margin: 20px 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            min-width: 100px;
+        }
+        
+        .back-btn {
+            background: var(--color-light);
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+        
+        .slide-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .slide-btn {
+            background: var(--color-secondary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .slide-counter {
+            margin-top: 10px;
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+        
+        .exercise-title {
+            margin: 10px 0 5px;
+            color: var(--color-accent);
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-height: 24px;
+        }
+        
+        .exercise-instruction {
+            margin: 10px 0;
+            padding: 0 15px;
+            color: var(--color-text);
+            min-height: 60px;
+        }
+        
+        .exercise-detail {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: var(--color-secondary);
+        }
+        
+        .breathing-indicator {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            color: var(--color-primary);
+            font-weight: bold;
+            min-height: 30px;
+        }
+    </style>
+</head>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log("Service Worker enregistré"));
+}
+</script>
+
+
+<body>
+    <div class="container">
+        <h1>Méditation Guidée</h1>
+        <p>Choisissez votre pratique :</p>
+        
+        <div class="buttons-container">
+            <button onclick="startMeditation('reveil')">Réveil</button>
+            <button onclick="startMeditation('etirements')">Étirements</button>
+            <button onclick="startMeditation('tonifier')">Tonifier</button>
+            <button onclick="startMeditation('calme')">Calme</button>
+            <button onclick="startMeditation('meditation')">Méditation</button>
+            <button onclick="startMeditation('dodo')">Dodo</button>
+        </div>
+        
+        <div id="meditationDisplay" class="meditation-display">
+            <div class="exercise-title" id="exerciseTitle"></div>
+            <div class="breathing-indicator" id="breathingIndicator"></div>
+            
+            <div class="circle-container">
+                <svg class="progress-circle" viewBox="0 0 100 100">
+                    <circle class="progress-circle-background" cx="50" cy="50" r="45"></circle>
+                    <circle class="progress-circle-fill" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                </svg>
+                <img id="meditationImage" class="meditation-image" src="" alt="Image de méditation">
+            </div>
+            
+            <div class="timer" id="timer">05:00</div>
+            
+            <div class="exercise-instruction" id="exerciseInstruction"></div>
+            
+            <div class="exercise-detail" id="exerciseDetail"></div>
+            
+            <div class="slide-counter" id="slideCounter">1/5</div>
+            
+            <div class="slide-controls">
+                <button class="slide-btn" onclick="prevSlide()">← Précédent</button>
+                <button class="slide-btn" onclick="nextSlide()">Suivant →</button>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
+                <button class="control-btn back-btn" onclick="backToMenu()">Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let meditationInterval;
+        let breathingInterval;
+        let remainingTime = 0;
+        let totalDuration = 0;
+        let isPaused = false;
+        let currentSlide = 0;
+        let currentMeditationType = '';
+        let currentBreathingPhase = '';
+        
+        // Durées pour chaque type de méditation (en secondes)
+        const meditationDurations = {
+            'reveil': 300,      // 5 minutes
+            'etirements': 300,  // 5 minutes
+            'tonifier': 480,    // 8 minutes
+            'calme': 420,       // 7 minutes
+            'meditation': 900,  // 15 minutes
+            'dodo': 600         // 10 minutes
+        };
+        
+        // Diaporama pour chaque type de méditation
+        const meditationSlides = {
+            'reveil': [
+                { 
+                    image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500&auto=format&fit=crop&q=60',
+                    title: 'Respiration 4-4-4-4',
+                    duration: 60,
+                    instruction: "Rythme de respiration carrée",
+                    detail: "Asseyez-vous droit, mains sur les genoux. Inspirez par le nez pendant 4 secondes en remplissant d'abord le ventre puis la poitrine. Bloquez 4 secondes. Expirez lentement par la bouche pendant 4 secondes. Bloquez 4 secondes avant de recommencer.",
+                    breathingPattern: [4, 4, 4, 4]
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=500&auto=format&fit=crop&q=60',
+                    title: 'Étirement du chat',
+                    duration: 60,
+                    instruction: "Mobilisation vertébrale",
+                    detail: "À quatre pattes, mains sous les épaules, genoux sous les hanches. À l'expire, arrondissez le dos comme un chat en rentrant le menton. À l'inspire, creusez le dos en levant la tête et le coccyx. Répétez lentement."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&auto=format&fit=crop&q=60',
+                    title: 'Échauffement complet',
+                    duration: 120,
+                    instruction: "Préparation corporelle",
+                    detail: "1. Rotation des épaules (20s)\n2. Rotation des hanches (20s)\n3. Flexion des genoux (20s)\n4. Rotation des chevilles (20s)\n5. Étirement des doigts (20s)\n6. Flexions latérales (20s)"
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe?w=500&auto=format&fit=crop&q=60',
+                    title: 'Respiration 5-4-3-4',
+                    duration: 60,
+                    instruction: "Rythme apaisant",
+                    detail: "Assis confortablement, inspirez profondément par le nez pendant 5 secondes. Bloquez 4 secondes. Expirez lentement par la bouche pendant 3 secondes. Pause de 4 secondes avant le cycle suivant. Concentrez-vous sur le flux d'air.",
+                    breathingPattern: [5, 4, 3, 4]
+                }
+            ],
+            'etirements': [
+                { 
+                    image: 'https://images.unsplash.com/photo-1571019614243-c778b04a562f?w=500&auto=format&fit=crop&q=60',
+                    title: 'Étirement jambe droite assise',
+                    duration: 30,
+                    instruction: "Asseyez-vous, jambe droite tendue",
+                    detail: "Asseyez-vous avec la jambe droite tendue, gauche pliée pied contre la cuisse droite. Penchez-vous vers l'avant en gardant le dos droit. Attrapez votre pied ou tibia. Maintenez 30s en respirant profondément."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=500&auto=format&fit=crop&q=60',
+                    title: 'Torsion vertébrale assise',
+                    duration: 30,
+                    instruction: "Rotation de la colonne",
+                    detail: "Assis jambes croisées, placez la main droite sur le genou gauche et la main gauche derrière vous. Inspirez en allongeant la colonne, expirez en tournant. Gardez les épaules basses. 30s chaque côté."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=500&auto=format&fit=crop&q=60',
+                    title: 'Papillon',
+                    duration: 30,
+                    instruction: "Étirement des hanches",
+                    detail: "Assis, plantes de pieds jointes, genoux tombant sur les côtés. Tenez vos pieds avec les mains. Gardez le dos droit et approchez les pieds du bassin pour intensifier. Respiration calme pendant 30s."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&auto=format&fit=crop&q=60',
+                    title: 'Étirement latéral debout',
+                    duration: 30,
+                    instruction: "Allongement du côté du corps",
+                    detail: "Debout, pieds largeur hanches, levez le bras droit et penchez-vous à gauche. Main gauche peut glisser sur la cuisse. Gardez les hanches stables. 30s chaque côté."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&auto=format&fit=crop&q=60',
+                    title: 'Chien tête en bas',
+                    duration: 30,
+                    instruction: "Étirement complet",
+                    detail: "À partir de la position à quatre pattes, poussez les hanches vers le ciel, jambes tendues. Talons vers le sol, dos long. Répartissez le poids entre mains et pieds. Respiration profonde 30s."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1546387903-6d82d96ccca6?w=500&auto=format&fit=crop&q=60',
+                    title: 'Étirement des épaules',
+                    duration: 30,
+                    instruction: "Bras en croix",
+                    detail: "Debout, tendez le bras droit devant vous à hauteur d'épaule. Placez la main gauche sur le coude droit et tirez doucement vers la gauche. Gardez les épaules basses. 30s chaque bras."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=60',
+                    title: 'Posture de l\'enfant',
+                    duration: 30,
+                    instruction: "Détente du dos",
+                    detail: "À genoux, fesses sur les talons, penchez-vous en avant front au sol. Bras tendus devant ou le long du corps. Respiration ventrale profonde 30s."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=500&auto=format&fit=crop&q=60',
+                    title: 'Étirement du psoas',
+                    duration: 30,
+                    instruction: "Fente basse",
+                    detail: "Fente avant avec genou arrière au sol. Gardez le buste droit et poussez légèrement les hanches vers l'avant. 30s chaque jambe."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe?w=500&auto=format&fit=crop&q=60',
+                    title: 'Rotation des chevilles',
+                    duration: 30,
+                    instruction: "Assis jambes tendues",
+                    detail: "Asseyez-vous jambes tendues, faites 10 rotations dans chaque sens avec chaque cheville. Puis pointez et fléchissez les pieds lentement."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=60',
+                    title: 'Relaxation finale',
+                    duration: 30,
+                    instruction: "Allongé sur le dos",
+                    detail: "Allongez-vous sur le dos, bras légèrement écartés, paumes vers le haut. Fermez les yeux et relâchez chaque partie du corps en partant des pieds jusqu'à la tête."
+                }
+            ],
+            'tonifier': [
+                { 
+                    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&auto=format&fit=crop&q=60',
+                    title: 'Respiration préparatoire',
+                    duration: 60,
+                    instruction: "Préparation à l'effort",
+                    detail: "Debout, inspirez profondément en levant les bras, expirez en abaissant. Répétez 5 fois pour oxygéner les muscles.",
+                    breathingPattern: [4, 0, 4, 0]
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=500&auto=format&fit=crop&q=60',
+                    title: 'Gainage ventral',
+                    duration: 120,
+                    instruction: "Planche sur avant-bras",
+                    detail: "Position face au sol sur les avant-bras et pointes de pieds. Corps aligné de la tête aux pieds. Contractez les abdominaux et les fessiers. Maintenez 2 minutes en respirant régulièrement."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1571019614243-c778b04a562f?w=500&auto=format&fit=crop&q=60',
+                    title: 'Squats',
+                    duration: 60,
+                    instruction: "20 répétitions",
+                    detail: "Pieds largeur épaules, descendez comme pour s'asseoir en gardant les genoux alignés avec les pieds. Dos droit, poids sur les talons. Remontez en contractant les fessiers."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=500&auto=format&fit=crop&q=60',
+                    title: 'Pompes',
+                    duration: 60,
+                    instruction: "15 répétitions",
+                    detail: "Mains au sol largeur épaules, corps gainé. Descendez en contrôlant jusqu'à ce que la poitrine frôle le sol, puis remontez. Version genoux au sol si nécessaire."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&auto=format&fit=crop&q=60',
+                    title: 'Fentes statiques',
+                    duration: 120,
+                    instruction: "30s chaque jambe",
+                    detail: "Grand pas en avant, genou avant à 90°, genou arrière frôle le sol. Gardez le buste droit. Poids réparti entre les deux jambes."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=60',
+                    title: 'Pont',
+                    duration: 120,
+                    instruction: "Soulevez le bassin",
+                    detail: "Allongé sur le dos, pieds au sol largeur hanches. Soulevez le bassin en expirant jusqu'à former une ligne droite épaules-genoux. Contractez les fessiers en haut."
+                }
+            ],
+            'calme': [
+                { 
+                    image: 'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=500&auto=format&fit=crop&q=60',
+                    title: 'Respiration carrée',
+                    duration: 120,
+                    instruction: "4-4-4-4",
+                    detail: "Inspirez profondément par le nez pendant 4 secondes. Bloquez la respiration 4 secondes. Expirez lentement par la bouche pendant 4 secondes. Pause de 4 secondes avant de recommencer. Concentrez-vous sur la régularité.",
+                    breathingPattern: [4, 4, 4, 4]
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=60',
+                    title: 'Posture de l\'enfant',
+                    duration: 120,
+                    instruction: "Détente complète",
+                    detail: "À genoux, fesses sur les talons, penchez le buste vers l'avant front au sol. Bras peuvent être tendus devant ou le long du corps. Respiration ventrale profonde, relâchez toutes les tensions."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe?w=500&auto=format&fit=crop&q=60',
+                    title: 'Balayage corporel',
+                    duration: 180,
+                    instruction: "Détente progressive",
+                    detail: "Allongé ou assis, portez successivement attention à chaque partie du corps en partant des orteils jusqu'au sommet du crâne. À chaque expiration, relâchez les tensions de la zone observée."
+                }
+            ],
+            'meditation': [
+                { 
+                    image: 'https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe?w=500&auto=format&fit=crop&q=60',
+                    title: 'Ancrage',
+                    duration: 180,
+                    instruction: "Présence au corps",
+                    detail: "Asseyez-vous confortablement, dos droit mais détendu. Prenez conscience des points de contact avec le sol ou le siège. Observez les sensations physiques sans jugement."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=60',
+                    title: 'Observation du souffle',
+                    duration: 300,
+                    instruction: "Respiration naturelle",
+                    detail: "Portez attention au flux naturel de votre respiration sans le modifier. Observez la température de l'air, le mouvement du ventre, la pause entre les cycles. Lorsque l'esprit vagabonde, ramenez doucement l'attention sur le souffle."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=500&auto=format&fit=crop&q=60',
+                    title: 'Méditation mantra',
+                    duration: 300,
+                    instruction: "Répétition silencieuse",
+                    detail: "Choisissez un mot ou une phrase simple (comme Paix, Om, ou Je suis ici). Répétez-le silencieusement en synchronisation avec votre respiration. Laissez le son vibrer intérieurement."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1546387903-6d82d96ccca6?w=500&auto=format&fit=crop&q=60',
+                    title: 'Retour au présent',
+                    duration: 120,
+                    instruction: "Transition en douceur",
+                    detail: "Reprenez progressivement conscience de l'environnement. Bougez doucement les doigts et orteils. Étirez-vous si nécessaire. Prenez un moment pour observer comment vous vous sentez avant d'ouvrir les yeux."
+                }
+            ],
+            'dodo': [
+                { 
+                    image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500&auto=format&fit=crop&q=60',
+                    title: 'Jambes contre le mur',
+                    duration: 180,
+                    instruction: "Détente circulatoire",
+                    detail: "Allongé près d'un mur, jambes verticales contre le mur, bras le long du corps. Fermez les yeux et relâchez complètement le poids des jambes. Respiration abdominale lente."
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=500&auto=format&fit=crop&q=60',
+                    title: 'Respiration 4-7-8',
+                    duration: 180,
+                    instruction: "Technique d'endormissement",
+                    detail: "Inspirez par le nez pendant 4 secondes. Retenez l'air 7 secondes. Expirez lentement par la bouche pendant 8 secondes. Répétez 5 cycles. Cette technique ralentit le rythme cardiaque.",
+                    breathingPattern: [4, 7, 8, 0]
+                },
+                { 
+                    image: 'https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe?w=500&auto=format&fit=crop&q=60',
+                    title: 'Visualisation guidée',
+                    duration: 240,
+                    instruction: "Paysage paisible",
+                    detail: "Fermez les yeux et imaginez un lieu apaisant (plage, forêt...). Engagez tous vos sens : bruits, odeurs, sensations. Laissez-vous bercer par cette image en respirant profondément."
+                }
+            ]
+        };
+        
+        function startMeditation(type) {
+            currentMeditationType = type;
+            currentSlide = 0;
+            
+            // Masquer les boutons et afficher l'interface de méditation
+            document.querySelector('.buttons-container').style.display = 'none';
+            document.querySelector('p').style.display = 'none';
+            document.getElementById('meditationDisplay').style.display = 'flex';
+            
+            // Charger le premier slide
+            loadSlide(currentSlide);
+        }
+        
+        function loadSlide(slideIndex) {
+            const slides = meditationSlides[currentMeditationType];
+            const slide = slides[slideIndex];
+            
+            // Mettre à jour l'affichage
+            document.getElementById('meditationImage').src = slide.image;
+            document.getElementById('exerciseTitle').textContent = slide.title;
+            document.getElementById('exerciseInstruction').textContent = slide.instruction;
+            document.getElementById('exerciseDetail').textContent = slide.detail;
+            document.getElementById('slideCounter').textContent = `${slideIndex + 1}/${slides.length}`;
+            
+            // Configurer le timer
+            remainingTime = slide.duration;
+            totalDuration = slide.duration;
+            updateTimerDisplay();
+            
+            // Réinitialiser le cercle de progression
+            const circumference = 283;
+            document.querySelector('.progress-circle-fill').style.strokeDashoffset = circumference;
+            
+            // Démarrer le compte à rebours
+            startCountdown();
+            
+            // Démarrer l'indicateur de respiration si applicable
+            if (slide.breathingPattern) {
+                startBreathingIndicator(slide.breathingPattern);
+            } else {
+                document.getElementById('breathingIndicator').textContent = '';
+                clearInterval(breathingInterval);
+            }
+        }
+        
+        function startBreathingIndicator(pattern) {
+            clearInterval(breathingInterval);
+            const phases = ['Inspirez', 'Bloquez', 'Expirez', 'Bloquez'];
+            let phaseIndex = 0;
+            let counter = pattern[0];
+            
+            document.getElementById('breathingIndicator').textContent = `${phases[phaseIndex]} ${counter}`;
+            
+            breathingInterval = setInterval(() => {
+                counter--;
+                
+                if (counter <= 0) {
+                    phaseIndex = (phaseIndex + 1) % 4;
+                    if (pattern[phaseIndex] === 0) {
+                        phaseIndex = (phaseIndex + 1) % 4; // Passer les phases à 0
+                    }
+                    counter = pattern[phaseIndex];
+                }
+                
+                if (counter > 0) {
+                    document.getElementById('breathingIndicator').textContent = `${phases[phaseIndex]} ${counter}`;
+                } else {
+                    document.getElementById('breathingIndicator').textContent = `${phases[phaseIndex]}`;
+                }
+            }, 1000);
+        }
+        
+        function startCountdown() {
+            clearInterval(meditationInterval);
+            isPaused = false;
+            document.getElementById('pauseBtn').textContent = 'Pause';
+            
+            meditationInterval = setInterval(function() {
+                if (!isPaused) {
+                    remainingTime--;
+                    updateTimerDisplay();
+                    
+                    // Mettre à jour le cercle de progression
+                    const progress = 1 - (remainingTime / totalDuration);
+                    const circumference = 283;
+                    const offset = circumference - (progress * circumference);
+                    document.querySelector('.progress-circle-fill').style.strokeDashoffset = offset;
+                    
+                    if (remainingTime <= 0) {
+                        clearInterval(meditationInterval);
+                        document.getElementById('timer').textContent = "Terminé!";
+                        // Passer automatiquement au slide suivant après un délai
+                        setTimeout(() => {
+                            nextSlide();
+                        }, 2000);
+                    }
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? 'Reprendre' : 'Pause';
+            
+            if (!isPaused && remainingTime > 0) {
+                startCountdown();
+            }
+        }
+        
+        function nextSlide() {
+            const slides = meditationSlides[currentMeditationType];
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                loadSlide(currentSlide);
+            } else {
+                // Si dernier slide, retour au menu
+                backToMenu();
+            }
+        }
+        
+        function prevSlide() {
+            const slides = meditationSlides[currentMeditationType];
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            loadSlide(currentSlide);
+        }
+        
+        function backToMenu() {
+            clearInterval(meditationInterval);
+            clearInterval(breathingInterval);
+            document.querySelector('.buttons-container').style.display = 'grid';
+            document.querySelector('p').style.display = 'block';
+            document.getElementById('meditationDisplay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
